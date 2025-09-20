@@ -1,0 +1,39 @@
+name: Deploy Quasar SPA to GitHub Pages
+
+on:
+  push:
+    branches: [ "master" ]  # branch ที่คุณใช้
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # allow pushing to gh-pages
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install -g @quasar/cli   # ติดตั้ง Quasar CLI
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Build Quasar SPA
+        run: npx quasar build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.MYTOKEN }}  # 🔒 ต้องตั้งค่า Secret
+          publish_dir: dist/spa
