@@ -37,9 +37,9 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v5
+        uses: peaceiris/actions-gh-pages@v5.0.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist/spa
           publish_branch: gh-pages
-          force_orphan: true   # สร้าง branch ใหม่แบบ orphan ถ้ายังไม่เคยมี
+          force_orphan: true
