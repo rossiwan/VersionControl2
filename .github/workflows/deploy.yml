@@ -6,7 +6,10 @@ on:
       - master  # หรือ main แล้วแต่ branch ของคุณ
 
 permissions:
+
   contents: write
+  Pages: write
+  id-token: write
 
 jobs:
   build-and-deploy:
