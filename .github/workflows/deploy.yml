@@ -1,37 +1,57 @@
-name: Deploy Quasar SPA to GitHub Pages
+name: Build and Deploy Quasar to Pages
 
 on:
   push:
-    branches:
-      - master  # หรือ main แล้วแต่ branch ของคุณ
+    branches: [ "main" ]
+  workflow_dispatch: {}
 
 permissions:
-
-  contents: write
-  Pages: write
+  contents: read
+  pages: write
   id-token: write
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
 
+jobs:
+  build:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: VersionControl1/package-lock.json
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install and Build (Quasar)
+        working-directory: VersionControl1
+        env:
+          PUBLIC_PATH: /versioncontrol/
+        run: |
+          npm ci
+          npx quasar build
 
-      - name: Build project
-        run: npm run build
+      - name: Copy index.html to 404.html (SPA routing)
+        run: cp VersionControl1/dist/spa/index.html VersionControl1/dist/spa/404.html
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
+          path: VersionControl1/dist/spa
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
